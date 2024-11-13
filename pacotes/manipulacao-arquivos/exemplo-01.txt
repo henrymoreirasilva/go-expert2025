@@ -1,0 +1,1 @@
+Exemplo 1Escrevendo em formato BYTE no arquivo
