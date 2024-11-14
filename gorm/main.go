@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 
-	"github.com/google/uuid"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -14,6 +13,12 @@ type Category struct {
 	Products []Product
 }
 
+type Line struct {
+	ID       int `gorm:primaryKey`
+	Name     string
+	Products []Product `gorm:"many2many:products_lines;"`
+}
+
 type Product struct {
 	ID           int `gorm:"primaryKey`
 	Name         string
@@ -21,6 +26,7 @@ type Product struct {
 	CategoryId   int
 	Category     Category
 	SerialNumber SerialNumber
+	Lines        []Line `gorm:"many2many:products_lines;"`
 	gorm.Model
 }
 
@@ -37,31 +43,40 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&Product{}, &Category{}, &SerialNumber{})
+	// db.AutoMigrate(&Product{}, &Category{}, &SerialNumber{})
 
-	tx := db.Create(&Category{Name: "Informática"})
-	tx = db.Create(&Category{Name: "Papelaria"})
+	// tx := db.Create(&Category{Name: "Informática"})
+	// tx = db.Create(&Category{Name: "Papelaria"})
 
-	tx = db.Create(&Product{Name: "Vaio", Price: 3500, CategoryId: 1})
-	tx = db.Create(&Product{Name: "Acer", Price: 3000, CategoryId: 1})
-	tx = db.Create(&Product{Name: "Dell", Price: 3800, CategoryId: 1})
+	// line_1 := Line{
+	// 	Name: "Linha 1",
+	// }
+	// line_2 := Line{
+	// 	Name: "Linha 2",
+	// }
+	// tx = db.Create(&line_1)
+	// tx = db.Create(&line_2)
 
-	tx = db.Create(&Product{Name: "Caneta", Price: 1, CategoryId: 2})
-	tx = db.Create(&Product{Name: "Caderno", Price: 12, CategoryId: 2})
+	// tx = db.Create(&Product{Name: "Vaio", Price: 3500, CategoryId: 1, Lines: []Line{line_1, line_2}})
+	// tx = db.Create(&Product{Name: "Acer", Price: 3000, CategoryId: 1, Lines: []Line{line_1, line_2}})
+	// tx = db.Create(&Product{Name: "Dell", Price: 3800, CategoryId: 1, Lines: []Line{line_1, line_2}})
 
-	tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 1})
-	tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 2})
-	tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 3})
-	tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 4})
-	tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 5})
+	// tx = db.Create(&Product{Name: "Caneta", Price: 1, CategoryId: 2, Lines: []Line{line_2}})
+	// tx = db.Create(&Product{Name: "Caderno", Price: 12, CategoryId: 2, Lines: []Line{line_1}})
+
+	// tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 1})
+	// tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 2})
+	// tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 3})
+	// tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 4})
+	// tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 5})
 
 	//product := Product{}
 	//products := []Product{}
 
 	// tx = db.First(&product, "name = ?", "Vaio")
-	if tx.Error != nil {
-		log.Fatal(tx.Error)
-	}
+	// if tx.Error != nil {
+	// 	log.Fatal(tx.Error)
+	// }
 
 	// println(product.Name, product.Price)
 
@@ -92,16 +107,29 @@ func main() {
 	// 	println(p.Name, p.Price, p.CategoryId, p.Category.Name, p.SerialNumber.Number)
 	// }
 
-	categories := []Category{}
-	err = db.Model(&Category{}).Preload("Products").Find(&categories).Error
+	// categories := []Category{}
+	// err = db.Model(&Category{}).Preload("Products").Preload("Products.SerialNumber").Find(&categories).Error
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// for _, c := range categories {
+	// 	println(c.Name)
+	// 	for _, p := range c.Products {
+	// 		println("- ", p.Name, p.Price, p.SerialNumber.Number)
+	// 	}
+	// }
+
+	lines := []Line{}
+	err = db.Model(&Line{}).Preload("Products").Preload("Products.Category").Preload("Products.SerialNumber").Find(&lines).Error
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, c := range categories {
-		println(c.Name)
-		for _, p := range c.Products {
-			println("- ", p.Name, p.Price)
+	for _, l := range lines {
+		println(l.Name)
+		for _, p := range l.Products {
+			println("- ", p.Category.Name, p.Name, p.Price, p.SerialNumber.Number)
 		}
 	}
 
