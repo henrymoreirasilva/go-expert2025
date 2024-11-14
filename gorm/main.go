@@ -3,15 +3,31 @@ package main
 import (
 	"log"
 
+	"github.com/google/uuid"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
+type Category struct {
+	ID       int `gorm:primaryKey`
+	Name     string
+	Products []Product
+}
+
 type Product struct {
-	ID    int `gorm:"primaryKey`
-	Name  string
-	Price float32
+	ID           int `gorm:"primaryKey`
+	Name         string
+	Price        float32
+	CategoryId   int
+	Category     Category
+	SerialNumber SerialNumber
 	gorm.Model
+}
+
+type SerialNumber struct {
+	ID        int `gorm:"primaryKey"`
+	Number    string
+	ProductID int
 }
 
 func main() {
@@ -21,14 +37,26 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&Product{})
+	db.AutoMigrate(&Product{}, &Category{}, &SerialNumber{})
 
-	tx := db.Create(&Product{Name: "Vaio", Price: 3500})
-	tx = db.Create(&Product{Name: "Acer", Price: 3000})
-	tx = db.Create(&Product{Name: "Dell", Price: 3800})
+	tx := db.Create(&Category{Name: "Informática"})
+	tx = db.Create(&Category{Name: "Papelaria"})
+
+	tx = db.Create(&Product{Name: "Vaio", Price: 3500, CategoryId: 1})
+	tx = db.Create(&Product{Name: "Acer", Price: 3000, CategoryId: 1})
+	tx = db.Create(&Product{Name: "Dell", Price: 3800, CategoryId: 1})
+
+	tx = db.Create(&Product{Name: "Caneta", Price: 1, CategoryId: 2})
+	tx = db.Create(&Product{Name: "Caderno", Price: 12, CategoryId: 2})
+
+	tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 1})
+	tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 2})
+	tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 3})
+	tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 4})
+	tx = db.Create(&SerialNumber{Number: uuid.New().String(), ProductID: 5})
 
 	//product := Product{}
-	products := []Product{}
+	//products := []Product{}
 
 	// tx = db.First(&product, "name = ?", "Vaio")
 	if tx.Error != nil {
@@ -37,21 +65,44 @@ func main() {
 
 	// println(product.Name, product.Price)
 
-	db.Where("price < ?", 3800).Limit(1).Offset(0).Find(&products)
-	for _, p := range products {
-		println(p.Name, p.Price)
+	// db.Where("price < ?", 3800).Limit(1).Offset(0).Find(&products)
+	// for _, p := range products {
+	// 	println(p.Name, p.Price, p.CategoriId, p.Category.Name)
+	// }
+
+	// db.Find(&products)
+	// products[1].Name = "Acer Raysen1"
+	// db.Save(&products[1])
+
+	// db.Delete(&products, "price < ?", 3500)
+	// println("DELETADO!")
+
+	// db.Find(&products)
+	// for _, p := range products {
+	// 	println(p.Name, p.Price)
+	// }
+
+	// db.Preload("Category").Find(&products)
+	// for _, p := range products {
+	// 	println(p.Name, p.Price, p.CategoryId, p.Category.Name)
+	// }
+
+	// db.Preload("Category").Preload("SerialNumber").Find(&products)
+	// for _, p := range products {
+	// 	println(p.Name, p.Price, p.CategoryId, p.Category.Name, p.SerialNumber.Number)
+	// }
+
+	categories := []Category{}
+	err = db.Model(&Category{}).Preload("Products").Find(&categories).Error
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	db.Find(&products)
-	products[1].Name = "Acer Raysen1"
-	db.Save(&products[1])
-
-	db.Delete(&products, "price < ?", 3500)
-	println("DELETADO!")
-
-	db.Find(&products)
-	for _, p := range products {
-		println(p.Name, p.Price)
+	for _, c := range categories {
+		println(c.Name)
+		for _, p := range c.Products {
+			println("- ", p.Name, p.Price)
+		}
 	}
 
 }
