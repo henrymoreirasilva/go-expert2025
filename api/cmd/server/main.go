@@ -15,12 +15,12 @@ import (
 )
 
 func main() {
-	config, err := configs.LoadConfig(".")
+	_, err := configs.LoadConfig(".")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	db, err := gorm.Open(sqlite.Open(config.DBName), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("teste.db"), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal(err)
@@ -35,8 +35,10 @@ func main() {
 	r.Use(middleware.Logger)
 
 	r.Post("/products", ProductHandler.CreateProduct)
+	r.Get("/products/", ProductHandler.GetProducts)
 	r.Get("/products/{id}", ProductHandler.GetProduct)
 	r.Put("/products/{id}", ProductHandler.UpdateProduct)
+	r.Delete("/products/{id}", ProductHandler.DeleteProduct)
 
 	http.ListenAndServe(":8000", r)
 }

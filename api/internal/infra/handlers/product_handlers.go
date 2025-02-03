@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi"
 	"github.com/henrymoreirasilva/go-api/internal/dto"
@@ -89,4 +90,54 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+
+	_, err := h.ProductDB.FindByID(id)
+	if err != nil {
+		http.Error(w, "product not found", http.StatusNotFound)
+		return
+	}
+
+	err = h.ProductDB.Delete(id)
+	if err != nil {
+		http.Error(w, "delete error", http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
+	limit := r.URL.Query().Get("limit")
+	page := r.URL.Query().Get("page")
+
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		limitInt = 0
+	}
+
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		pageInt = 0
+	}
+
+	sort := r.URL.Query().Get("sort")
+
+	products, err := h.ProductDB.FindAll(pageInt, limitInt, sort)
+	if err != nil {
+		http.Error(w, "list fail", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-type:", "pplication/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(products)
+
 }

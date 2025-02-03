@@ -19,10 +19,10 @@ func (p *Product) Create(product *entity.Product) error {
 
 func (p *Product) FindAll(page, limit int, sort string) ([]entity.Product, error) {
 	var products []entity.Product
-	if page < 1 {
+	if page <= 0 {
 		page = 1
 	}
-	if limit < 0 {
+	if limit <= 0 {
 		limit = 10
 	}
 
