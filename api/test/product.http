@@ -23,3 +23,5 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost:8000/products/ecbc9dba-9fa3-48de-95b5-ee1b94f80df8 HTTP/1.1
+
+
