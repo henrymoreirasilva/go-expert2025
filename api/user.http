@@ -1,9 +1,0 @@
-###
-POST http://localhost:8000/users 
-Content-Type: application/json
-
-{ 
-  "name": "Gabriel",
-  "email": "gabriel@zoomwi.com.br",
-  "password": "123456"
-}
