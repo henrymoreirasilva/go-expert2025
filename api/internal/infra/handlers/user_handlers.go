@@ -48,7 +48,6 @@ func (h *UserHandler) GetJWT(w http.ResponseWriter, r *http.Request) {
 		"exp": time.Now().Add(time.Second * time.Duration(h.JwtExpiresIn)).Unix(),
 	}
 	_, tokenString, _ := h.Jwt.Encode(mapClaims)
-	println(tokenString)
 	accessToken := map[string]string{"AccessToken": tokenString}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"token": accessToken["AccessToken"]})
