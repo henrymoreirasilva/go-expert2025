@@ -11,7 +11,7 @@
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host      localhost:8000
-// @BasePath  /api/v1
+// @BasePath  /
 
 // @securityDefinitions.apikey  ApiKeyAuth
 // @in header
